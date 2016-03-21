@@ -1,7 +1,8 @@
-package iland
+package iland_test
 
 import (
 	"encoding/json"
+	"github.com/ilanddev/golang-sdk"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"os"
@@ -9,13 +10,13 @@ import (
 )
 
 // Load API configuration properties from config.json file.
-func loadConfig() *Config {
+func loadConfig() *iland.Config {
 	file, err := os.Open("config.json")
 	if err != nil {
 		log.Fatal("Error loading config file:", err)
 	}
 	decoder := json.NewDecoder(file)
-	configuration := Config{}
+	configuration := iland.Config{}
 	err = decoder.Decode(&configuration)
 	if err != nil {
 		log.Fatal("Error loading config file:", err)
@@ -23,7 +24,7 @@ func loadConfig() *Config {
 	return &configuration
 }
 
-var c = NewClient(loadConfig())
+var c = iland.NewClient(loadConfig())
 
 // Test Get request.
 func TestGet(t *testing.T) {

@@ -1,7 +1,7 @@
 [![ReportCard][ReportCard-Image]][ReportCard-URL] [![GoDoc][GoDoc-Image]][GoDoc-URL] 
 
 # iland-sdk
-iland cloud goland SDK
+iland cloud golang SDK
 
 * Free software BSD License
 * iland cloud API doc: https://api.ilandcloud.com

@@ -2,11 +2,12 @@ package iland_test
 
 import (
 	"encoding/json"
-	"github.com/ilanddev/golang-sdk"
-	"github.com/stretchr/testify/assert"
 	"log"
 	"os"
 	"testing"
+
+	iland "github.com/ilanddev/golang-sdk"
+	"github.com/stretchr/testify/assert"
 )
 
 // Load API configuration properties from config.json file.

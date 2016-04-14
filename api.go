@@ -17,6 +17,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -157,12 +158,12 @@ func (c *Client) doRequest(relPath, verb, payload string) (string, error) {
 	req.Header.Add("Content-Type", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 	// check for response other than 200, 201, 202, and 204 as they denote API error
 	statusCode := resp.StatusCode
@@ -172,7 +173,7 @@ func (c *Client) doRequest(relPath, verb, payload string) (string, error) {
 		var e APIError
 		err = json.Unmarshal([]byte(responseBody), &e)
 		if err != nil {
-			log.Fatal("Error marshaling ApiError:", err)
+			return "", errors.New(fmt.Sprintf("Error marshaling ApiError: %s", err.Error()))
 		}
 		var errMsg string
 		if e.DetailMessage != "" {

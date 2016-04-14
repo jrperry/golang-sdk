@@ -173,7 +173,7 @@ func (c *Client) doRequest(relPath, verb, payload string) (string, error) {
 		var e APIError
 		err = json.Unmarshal([]byte(responseBody), &e)
 		if err != nil {
-			return "", errors.New(fmt.Sprintf("Error marshaling ApiError: %s", err.Error()))
+			return "", fmt.Errorf("Error marshaling ApiError: %s", err.Error())
 		}
 		var errMsg string
 		if e.DetailMessage != "" {

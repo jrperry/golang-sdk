@@ -81,7 +81,7 @@ type APIError struct {
 }
 
 // Get an API access token from the iland cloud API.
-func (c *Client) getToken() {
+func (c *Client) getToken() error {
 	tokenRequest := TokenRequest{c.Config.ClientID, c.Config.ClientSecret, c.Config.Username, c.Config.Password, "password"}
 	form := url.Values{}
 	form.Add("client_id", tokenRequest.ClientID)
@@ -91,24 +91,25 @@ func (c *Client) getToken() {
 	form.Add("grant_type", tokenRequest.GrantType)
 	resp, err := http.Post(c.Config.AccessURL, "application/x-www-form-urlencoded", strings.NewReader(form.Encode()))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	var t Token
 	err = json.Unmarshal(body, &t)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	c.Token = &t
 	c.setTokenExpireTime()
+	return nil
 }
 
 // Get an API access token from the iland cloud API.
-func (c *Client) refreshToken() {
+func (c *Client) refreshToken() error {
 	tokenRequest := RefreshTokenRequest{c.Config.ClientID, c.Config.ClientSecret, c.Token.AccessToken, "refresh_token"}
 	form := url.Values{}
 	form.Add("client_id", tokenRequest.ClientID)
@@ -117,20 +118,21 @@ func (c *Client) refreshToken() {
 	form.Add("grant_type", tokenRequest.GrantType)
 	resp, err := http.Post(c.Config.RefreshURL, "application/x-www-form-urlencoded", strings.NewReader(form.Encode()))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	var t Token
 	err = json.Unmarshal(body, &t)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	c.Token = &t
 	c.setTokenExpireTime()
+	return nil
 }
 
 // Set the token expiration time so we can auto-renew it when necessary.
@@ -188,15 +190,24 @@ func (c *Client) doRequest(relPath, verb, payload string) (string, error) {
 }
 
 // Refresh the iland cloud API token if necessary.
-func (c *Client) refreshTokenIfNecessary() {
+func (c *Client) refreshTokenIfNecessary() error {
 	if !c.isValidToken() {
 		log.Println("Retriving a new iland cloud API token.")
-		c.getToken()
+		err := c.getToken()
+		if err != nil {
+			c.TokenExpireTime = time.Now()
+			return fmt.Errorf("Error retrieving iland cloud API token. %s", err.Error())
+		}
 	} else {
 		//refresh the existing token
 		log.Println("Refreshing iland cloud API token.")
-		c.refreshToken()
+		err := c.refreshToken()
+		if err != nil {
+			c.TokenExpireTime = time.Now()
+			return fmt.Errorf("Error refreshing iland cloud API token. %s", err.Error())
+		}
 	}
+	return nil
 }
 
 // Check whether the current iland cloud API token is valid.

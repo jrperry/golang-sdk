@@ -1,9 +1,9 @@
 {
     "ApiBaseUrl":"https://api.ilandcloud.com/ecs",
-    "AccessUrl":"https://ecs.ilandcloud.com/auth/realms/iland-core/tokens/grants/access",
+    "AccessUrl":"https://ecs.ilandcloud.com/auth/realms/iland-core/protocol/openid-connect/token",
     "ClientId":"",
     "ClientSecret":"",
     "Username":"",
     "Password":"",
-    "RefreshUrl":"https://ecs.ilandcloud.com/auth/realms/iland-core/tokens/refresh"
+    "RefreshUrl":"https://ecs.ilandcloud.com/auth/realms/iland-core/protocol/openid-connect/token"
 }

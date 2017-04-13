@@ -139,7 +139,6 @@ func (c *Client) refreshToken() error {
 func (c *Client) setTokenExpireTime() {
 	var buffer int64 = 10
 	c.TokenExpireTime = time.Now().Add(time.Duration(c.Token.ExpiresIn-buffer) * time.Second)
-	log.Println("Auth token expires at:", c.TokenExpireTime)
 }
 
 // Remove the JSON hijacking prefix the iland cloud API adds.
@@ -153,7 +152,6 @@ func (c *Client) doRequest(relPath, verb, payload string) (string, error) {
 	c.refreshTokenIfNecessary()
 	client := &http.Client{}
 	path := c.Config.APIBaseURL + relPath
-	log.Println("Fetching: " + path)
 	bytesJSON := bytes.NewBuffer([]byte(payload))
 	req, err := http.NewRequest(verb, path, bytesJSON)
 	req.Header.Add("Authorization", "Bearer "+c.Token.AccessToken)

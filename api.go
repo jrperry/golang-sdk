@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -52,8 +51,9 @@ type Config struct {
 
 // Token object for holding access token and expiration time of iland cloud API token.
 type Token struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   int64  `json:"expires_in"`
+	AccessToken  string `json:"access_token"`
+	ExpiresIn    int64  `json:"expires_in"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 // TokenRequest object for holding params required for requesting a new iland cloud API token.
@@ -93,6 +93,9 @@ func (c *Client) getToken() error {
 	if err != nil {
 		return err
 	}
+	if resp.StatusCode >= 300 {
+		return fmt.Errorf("Could not retrieve a token.")
+	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -110,7 +113,7 @@ func (c *Client) getToken() error {
 
 // Get an API access token from the iland cloud API.
 func (c *Client) refreshToken() error {
-	tokenRequest := RefreshTokenRequest{c.Config.ClientID, c.Config.ClientSecret, c.Token.AccessToken, "refresh_token"}
+	tokenRequest := RefreshTokenRequest{c.Config.ClientID, c.Config.ClientSecret, c.Token.RefreshToken, "refresh_token"}
 	form := url.Values{}
 	form.Add("client_id", tokenRequest.ClientID)
 	form.Add("client_secret", tokenRequest.ClientSecret)
@@ -119,6 +122,9 @@ func (c *Client) refreshToken() error {
 	resp, err := http.Post(c.Config.RefreshURL, "application/x-www-form-urlencoded", strings.NewReader(form.Encode()))
 	if err != nil {
 		return err
+	}
+	if resp.StatusCode >= 300 {
+		return fmt.Errorf("Could not refresh current token.")
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
@@ -149,7 +155,10 @@ func removeJSONHijackingPrefix(b []byte) string {
 // Perform an HTTP request with the given relative path and HTTP
 // method type, any payload can be provided as a string.
 func (c *Client) doRequest(relPath, verb, payload string) (string, error) {
-	c.refreshTokenIfNecessary()
+	err := c.refreshTokenIfNecessary()
+	if err != nil {
+		return "", err
+	}
 	client := &http.Client{}
 	path := c.Config.APIBaseURL + relPath
 	bytesJSON := bytes.NewBuffer([]byte(payload))
@@ -168,7 +177,7 @@ func (c *Client) doRequest(relPath, verb, payload string) (string, error) {
 	// check for response other than 200, 201, 202, and 204 as they denote API error
 	statusCode := resp.StatusCode
 	responseBody := removeJSONHijackingPrefix(body)
-	if statusCode != 200 && statusCode != 201 && statusCode != 202 && statusCode != 204 {
+	if statusCode >= 300 {
 		// co-erce the return into an ilandcloud API error and get the detail message if possible
 		var e APIError
 		err = json.Unmarshal([]byte(responseBody), &e)
@@ -189,31 +198,31 @@ func (c *Client) doRequest(relPath, verb, payload string) (string, error) {
 
 // Refresh the iland cloud API token if necessary.
 func (c *Client) refreshTokenIfNecessary() error {
-	if !c.isValidToken() {
-		log.Println("Retriving a new iland cloud API token.")
+	if c == nil || c.Token == nil {
 		err := c.getToken()
 		if err != nil {
-			c.TokenExpireTime = time.Now()
 			return fmt.Errorf("Error retrieving iland cloud API token. %s", err.Error())
 		}
-	} else {
+	}
+	if c.isTokenExpiringSoon() {
 		//refresh the existing token
-		log.Println("Refreshing iland cloud API token.")
 		err := c.refreshToken()
 		if err != nil {
-			c.TokenExpireTime = time.Now()
-			return fmt.Errorf("Error refreshing iland cloud API token. %s", err.Error())
+			err := c.getToken()
+			if err != nil {
+				return fmt.Errorf("Error refreshing iland cloud API token. %s", err.Error())
+			}
 		}
 	}
 	return nil
 }
 
-// Check whether the current iland cloud API token is valid.
-func (c *Client) isValidToken() bool {
+// Check whether the current iland cloud API token is expiring soon.
+func (c *Client) isTokenExpiringSoon() bool {
 	if time.Now().After(c.TokenExpireTime) {
-		return false
+		return true
 	}
-	return true
+	return false
 }
 
 // Get performs a GET request to the iland cloud API to the given relative path.

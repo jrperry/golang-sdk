@@ -1,4 +1,4 @@
-package goiland
+package iland
 
 type Media struct {
 	client             *Client

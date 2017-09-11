@@ -1,4 +1,4 @@
-package goiland
+package iland
 
 import (
 	"encoding/json"
@@ -77,12 +77,16 @@ func (v Vdc) GetVirtualMachines() []VirtualMachine {
 	return virtualMachines
 }
 
-type VAppTemplateDeployParams struct {
+type vAppTemplateDeployParams struct {
 	VAppTemplateUUID string `json:"vapp_template_uuid"`
 	Name             string `json:"name"`
 }
 
-func (v Vdc) DeployVAppTemplate(params VAppTemplateDeployParams) (Task, error) {
+func (v Vdc) DeployVAppTemplate(VAppTemplateUUID, NewVAppName string) (Task, error) {
+	params := vAppTemplateDeployParams{
+		VAppTemplateUUID: VAppTemplateUUID,
+		Name:             NewVAppName,
+	}
 	output, _ := json.Marshal(&params)
 	task := Task{}
 	data, err := v.client.Post(fmt.Sprintf("/vdc/%s/vapp", v.UUID), output)

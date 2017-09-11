@@ -1,4 +1,4 @@
-package goiland
+package iland
 
 import (
 	"encoding/json"
@@ -17,7 +17,7 @@ type VirtualMachine struct {
 	StorageProfileUUIDs []string `json:"storage_profiles"`
 	HardwareVersion     string   `json:"hardware_version"`
 	MediaMounted        bool     `json:"media_inserted"`
-	MountedMediaName    string   `json:"mounted_media_name"`
+	MountedMediaName    string   `json:"inserted_media_name"`
 	Deployed            bool     `json:"deployed"`
 	Status              string   `json:"status"`
 	LocationID          string   `json:"location_id"`
@@ -177,9 +177,9 @@ func (v VirtualMachine) UpdateNics(nics []Nic) (Task, error) {
 	return task, err
 }
 
-func (v VirtualMachine) DeleteNic(nicID int) (Task, error) {
+func (v VirtualMachine) DeleteNic(nicIndex int) (Task, error) {
 	task := Task{}
-	data, err := v.client.Delete(fmt.Sprintf("/vm/%s/vnics/%d", v.UUID, nicID))
+	data, err := v.client.Delete(fmt.Sprintf("/vm/%s/vnics/%d", v.UUID, nicIndex))
 	if err != nil {
 		return task, err
 	}

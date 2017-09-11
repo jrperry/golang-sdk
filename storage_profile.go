@@ -1,4 +1,4 @@
-package goiland
+package iland
 
 type StorageProfile struct {
 	Name          string `json:"name"`

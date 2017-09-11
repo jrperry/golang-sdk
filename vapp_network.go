@@ -1,4 +1,4 @@
-package goiland
+package iland
 
 type VAppNetwork struct {
 	client *Client

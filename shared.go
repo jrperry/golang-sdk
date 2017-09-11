@@ -1,4 +1,4 @@
-package goiland
+package iland
 
 type SubnetParticipation struct {
 	Gateway  string    `json:"gateway"`

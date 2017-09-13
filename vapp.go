@@ -3,6 +3,7 @@ package iland
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type VApp struct {
@@ -105,6 +106,28 @@ func (v VApp) Rename(newVAppName string) (Task, error) {
 	return task, err
 }
 
+func (v VApp) TakeSnapshot() (Task, error) {
+	task := Task{}
+	params := struct {
+		Name        string `json:"name"`
+		Description string `json:"description"`
+		Memory      bool   `json:"memory"`
+		Quiesce     bool   `json:"quiesce"`
+	}{
+		Name:    time.Now().UTC().String(),
+		Memory:  false,
+		Quiesce: false,
+	}
+	output, _ := json.Marshal(&params)
+	data, err := v.client.Post(fmt.Sprintf("/vapp/%s/snapshot", v.UUID), output)
+	if err != nil {
+		return task, err
+	}
+	err = json.Unmarshal([]byte(data), &task)
+	task.client = v.client
+	return task, err
+}
+
 func (v VApp) RevertSnapshot() (Task, error) {
 	task := Task{}
 	data, err := v.client.Post(fmt.Sprintf("/vapp/%s/snapshot/restore", v.UUID), []byte{})
@@ -146,6 +169,17 @@ func (v VApp) AddVAppNetwork(params AddVAppNetworkParams) (Task, error) {
 	task := Task{}
 	output, _ := json.Marshal(&params)
 	data, err := v.client.Post(fmt.Sprintf("/vapp/%s/vapp-network", v.UUID), output)
+	if err != nil {
+		return task, err
+	}
+	err = json.Unmarshal([]byte(data), &task)
+	task.client = v.client
+	return task, err
+}
+
+func (v VApp) RemoveNetwork(vAppNetworkUUID string) (Task, error) {
+	task := Task{}
+	data, err := v.client.Delete(fmt.Sprintf("/vapp/%s/network/%s", v.UUID, vAppNetworkUUID))
 	if err != nil {
 		return task, err
 	}

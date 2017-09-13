@@ -39,6 +39,15 @@ type EdgeNATConfig struct {
 	Rules   []NATRule `json:"rules"`
 }
 
+func (e Edge) GetUplinkInterface() EdgeInterface {
+	for _, edgeInterface := range e.Interfaces {
+		if edgeInterface.Type == "uplink" {
+			return edgeInterface
+		}
+	}
+	return EdgeInterface{}
+}
+
 func (e Edge) GetNATConfig() (EdgeNATConfig, error) {
 	natConfig := EdgeNATConfig{}
 	data, err := e.client.Get(fmt.Sprintf("/edge/%s/nat", e.UUID))

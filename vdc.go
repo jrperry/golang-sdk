@@ -76,24 +76,3 @@ func (v Vdc) GetVirtualMachines() []VirtualMachine {
 	}
 	return virtualMachines
 }
-
-type vAppTemplateDeployParams struct {
-	VAppTemplateUUID string `json:"vapp_template_uuid"`
-	Name             string `json:"name"`
-}
-
-func (v Vdc) DeployVAppTemplate(VAppTemplateUUID, NewVAppName string) (Task, error) {
-	params := vAppTemplateDeployParams{
-		VAppTemplateUUID: VAppTemplateUUID,
-		Name:             NewVAppName,
-	}
-	output, _ := json.Marshal(&params)
-	task := Task{}
-	data, err := v.client.Post(fmt.Sprintf("/vdc/%s/vapp", v.UUID), output)
-	if err != nil {
-		return task, err
-	}
-	err = json.Unmarshal([]byte(data), &task)
-	task.client = v.client
-	return task, err
-}

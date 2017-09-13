@@ -52,11 +52,25 @@ func (v VirtualMachine) GetDisks() []Disk {
 	json.Unmarshal(data, &disks)
 	return disks
 }
+
 func (v VirtualMachine) GetNics() []Nic {
 	nics := []Nic{}
 	data, _ := v.client.Get(fmt.Sprintf("/vm/%s/vnics", v.UUID))
 	json.Unmarshal(data, &nics)
 	return nics
+}
+
+type VMwareTools struct {
+	Status        string `json:"status"`
+	RunningStatus string `json:"running_status"`
+	Version       string `json:"version"`
+}
+
+func (v VirtualMachine) GetTools() VMwareTools {
+	tools := VMwareTools{}
+	data, _ := v.client.Get(fmt.Sprintf("/vm/%s/tools", v.UUID))
+	json.Unmarshal(data, &tools)
+	return tools
 }
 
 func (v VirtualMachine) Delete() (Task, error) {
@@ -94,6 +108,7 @@ func (v VirtualMachine) PowerOn() (Task, error) {
 		return task, err
 	}
 	err = json.Unmarshal(data, &task)
+	task.client = v.client
 	return task, err
 }
 
@@ -104,6 +119,7 @@ func (v VirtualMachine) Reboot() (Task, error) {
 		return task, err
 	}
 	err = json.Unmarshal(data, &task)
+	task.client = v.client
 	return task, err
 }
 
@@ -114,6 +130,7 @@ func (v VirtualMachine) PowerOff() (Task, error) {
 		return task, err
 	}
 	err = json.Unmarshal(data, &task)
+	task.client = v.client
 	return task, err
 }
 
@@ -163,10 +180,11 @@ func (v VirtualMachine) AddNic(nic Nic) (Task, error) {
 		return task, err
 	}
 	err = json.Unmarshal(data, &task)
+	task.client = v.client
 	return task, err
 }
 
-func (v VirtualMachine) UpdateNics(nics []Nic) (Task, error) {
+func (v VirtualMachine) ModifyNics(nics []Nic) (Task, error) {
 	task := Task{}
 	output, _ := json.Marshal(&nics)
 	data, err := v.client.Put(fmt.Sprintf("/vm/%s/vnics", v.UUID), output)
@@ -174,6 +192,7 @@ func (v VirtualMachine) UpdateNics(nics []Nic) (Task, error) {
 		return task, err
 	}
 	err = json.Unmarshal(data, &task)
+	task.client = v.client
 	return task, err
 }
 
@@ -184,13 +203,14 @@ func (v VirtualMachine) DeleteNic(nicIndex int) (Task, error) {
 		return task, err
 	}
 	err = json.Unmarshal(data, &task)
+	task.client = v.client
 	return task, err
 }
 
-func (v VirtualMachine) AddDisk(diskSizeMB int) (Task, error) {
+func (v VirtualMachine) AddDisk(diskSizeGB int) (Task, error) {
 	task := Task{}
 	disk := Disk{
-		Size: diskSizeMB,
+		Size: diskSizeGB,
 		Type: "LSI_LOGIC",
 	}
 	output, _ := json.Marshal(&disk)
@@ -199,6 +219,7 @@ func (v VirtualMachine) AddDisk(diskSizeMB int) (Task, error) {
 		return task, err
 	}
 	err = json.Unmarshal(data, &task)
+	task.client = v.client
 	return task, err
 }
 
@@ -210,6 +231,7 @@ func (v VirtualMachine) ModifyDisk(disk Disk) (Task, error) {
 		return task, err
 	}
 	err = json.Unmarshal(data, &task)
+	task.client = v.client
 	return task, err
 }
 
@@ -228,6 +250,7 @@ func (v VirtualMachine) RemoveDisk(diskName string) (Task, error) {
 		return task, err
 	}
 	err = json.Unmarshal(data, &task)
+	task.client = v.client
 	return task, err
 }
 

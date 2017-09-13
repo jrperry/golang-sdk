@@ -25,6 +25,22 @@ func NewClient(Username, Password, ClientID, ClientSecret string) *Client {
 	return &client
 }
 
+func (c *Client) Get(endpoint string) ([]byte, error) {
+	return c.request(endpoint, "GET", []byte{})
+}
+
+func (c *Client) Post(endpoint string, body []byte) ([]byte, error) {
+	return c.request(endpoint, "POST", body)
+}
+
+func (c *Client) Put(endpoint string, body []byte) ([]byte, error) {
+	return c.request(endpoint, "PUT", body)
+}
+
+func (c *Client) Delete(endpoint string) ([]byte, error) {
+	return c.request(endpoint, "DELETE", []byte{})
+}
+
 func (c *Client) GetLocations() []Location {
 	locations := []Location{}
 	data, _ := c.Get(fmt.Sprintf("/user/%s/inventory", c.username))

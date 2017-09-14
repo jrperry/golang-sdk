@@ -3,6 +3,7 @@ package iland
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type Vdc struct {
@@ -68,11 +69,44 @@ func (v Vdc) GetVApps() []VApp {
 
 func (v Vdc) GetVirtualMachines() []VirtualMachine {
 	virtualMachines := []VirtualMachine{}
-	data, _ := v.client.Get(fmt.Sprintf("/org/%s/vms", v.UUID))
+	data, _ := v.client.Get(fmt.Sprintf("/vdc/%s/vms", v.UUID))
 	json.Unmarshal([]byte(data), &virtualMachines)
 	for i, virtualMachine := range virtualMachines {
 		virtualMachine.client = v.client
 		virtualMachines[i] = virtualMachine
 	}
 	return virtualMachines
+}
+
+func (v Vdc) GetPerformance(start, end time.Time, perfInterval string, metric PerfMetric) (PerfResults, error) {
+	results := PerfResults{}
+	limit := getPerfLimit(perfInterval)
+	queryParams := fmt.Sprintf("?group=%s&name=%s&type=%s&start=%d&end=%d&interval=%s&limit=%s", metric.Group, metric.Name, metric.Type, getUnixMilliseconds(start), getUnixMilliseconds(end), perfInterval, limit)
+	data, err := v.client.Get(fmt.Sprintf("/vdc/%s/p%s", v.UUID, queryParams))
+	if err != nil {
+		return results, err
+	}
+	err = json.Unmarshal(data, &results)
+	return results, err
+}
+
+func (v Vdc) GetCurrentBill() (BillingSummary, error) {
+	billing := BillingSummary{}
+	data, err := v.client.Get(fmt.Sprintf("/vdc/%s/bill", v.UUID))
+	if err != nil {
+		return billing, err
+	}
+	err = json.Unmarshal(data, &billing)
+	return billing, err
+}
+
+func (v Vdc) GetPrevBill(month, year int) (BillingSummary, error) {
+	billing := BillingSummary{}
+	queryParams := fmt.Sprintf("?month=%d&year=%d", month, year)
+	data, err := v.client.Get(fmt.Sprintf("/vdc/%s/bill%s", v.UUID, queryParams))
+	if err != nil {
+		return billing, err
+	}
+	err = json.Unmarshal(data, &billing)
+	return billing, err
 }

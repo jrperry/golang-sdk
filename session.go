@@ -12,12 +12,6 @@ import (
 	"time"
 )
 
-const (
-	apiBaseURL = "https://api.ilandcloud.com/ecs"
-	accessURL  = "https://console.ilandcloud.com/auth/realms/iland-core/protocol/openid-connect/token"
-	refreshURL = "https://console.ilandcloud.com/auth/realms/iland-core/protocol/openid-connect/token"
-)
-
 type Token struct {
 	AccessToken  string `json:"access_token"`
 	ExpiresIn    int64  `json:"expires_in"`

@@ -5,16 +5,6 @@ import (
 	"fmt"
 )
 
-const (
-	TaskStatusSuccess       = "success"
-	TaskStatusRunning       = "running"
-	TaskStatusError         = "error"
-	TaskStatusQueued        = "queued"
-	TaskStatusCancelled     = "cancelled"
-	TaskStatusWaitingOnUser = "waiting-on-user-input"
-	TaskStatusUnknown       = "unknown"
-)
-
 type Task struct {
 	client         *Client
 	UUID           string `json:"uuid"`

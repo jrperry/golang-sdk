@@ -149,6 +149,46 @@ func (c *Client) request(relPath, verb string, payload []byte) ([]byte, error) {
 	return responseBody, nil
 }
 
+func (c *Client) getBinary(relPath string) ([]byte, error) {
+	err := c.refreshTokenIfNecessary()
+	if err != nil {
+		return []byte{}, err
+	}
+	client := &http.Client{}
+	path := apiBaseURL + relPath
+	req, err := http.NewRequest("GET", path, nil)
+	req.Header.Add("Authorization", "Bearer "+c.Token.AccessToken)
+	req.Header.Add("Content-Type", "application/vnd.ilandcloud.api.v0.8+json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return []byte{}, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return []byte{}, err
+	}
+	statusCode := resp.StatusCode
+	responseBody := removeJSONHijackingPrefix(body)
+	if statusCode >= 300 {
+
+		var e APIError
+		err = json.Unmarshal(responseBody, &e)
+		if err != nil {
+			return []byte{}, fmt.Errorf("Error marshaling ApiError: %s", err.Error())
+		}
+		var errMsg string
+		if e.DetailMessage != "" {
+			errMsg = e.DetailMessage
+		} else {
+			errMsg = e.Message
+		}
+		return responseBody, errors.New(errMsg)
+	}
+
+	return responseBody, nil
+}
+
 func (c *Client) postForm(relPath, contentType string, payload []byte) ([]byte, error) {
 	err := c.refreshTokenIfNecessary()
 	if err != nil {

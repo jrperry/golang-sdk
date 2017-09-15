@@ -270,3 +270,11 @@ func (v VirtualMachine) GetConsoleSession() (ConsoleSession, error) {
 	err = json.Unmarshal(data, &session)
 	return session, err
 }
+
+func (v VirtualMachine) GetScreenThumbnail() ([]byte, error) {
+	data, err := v.client.getBinary(fmt.Sprintf("/vm/%s/screen", v.UUID))
+	if err != nil {
+		return []byte{}, err
+	}
+	return data, err
+}

@@ -231,6 +231,11 @@ func (c *Client) GetVAppTemplates() []VAppTemplate {
 		json.Unmarshal(data, &catalogTemplates)
 		vAppTemplates = append(vAppTemplates, catalogTemplates...)
 	}
+	locations := c.GetLocations()
+	for _, location := range locations {
+		publicTemplates, _ := location.GetPublicVAppTemplates()
+		vAppTemplates = append(vAppTemplates, publicTemplates...)
+	}
 	for i, vAppTemplate := range vAppTemplates {
 		vAppTemplate.client = c
 		vAppTemplates[i] = vAppTemplate

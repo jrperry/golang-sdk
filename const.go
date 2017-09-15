@@ -13,9 +13,9 @@ const (
 	TaskStatusWaitingOnUser = "waiting-on-user-input"
 	TaskStatusUnknown       = "unknown"
 
-	perfGroupCpu     = "cpu"
-	perfGroupMemory  = "memory"
-	perfGroupNetwork = "network"
+	perfGroupCPU     = "cpu"
+	perfGroupMemory  = "mem"
+	perfGroupNetwork = "net"
 	perfGroupDisk    = "disk"
 
 	perfTypeAverage = "average"
@@ -23,26 +23,27 @@ const (
 	perfTypeLatest  = "latest"
 
 	PerfIntervalSecond = "second"
+	PerfIntervalMinute = "minute"
 	PerfIntervalHour   = "hour"
 	PerfIntervalDay    = "day"
 	PerfIntervalWeek   = "week"
 	PerfIntervalMonth  = "month"
 )
 
-var PerfCpuUsageAvg = PerfMetric{
-	Group: perfGroupCpu,
+var PerfCPUUsageAvg = PerfMetric{
+	Group: perfGroupCPU,
 	Name:  "usage",
 	Type:  perfTypeAverage,
 }
 
-var PerfCpuUsageMhzAvg = PerfMetric{
-	Group: perfGroupCpu,
+var PerfCPUUsageMhzAvg = PerfMetric{
+	Group: perfGroupCPU,
 	Name:  "usagemhz",
 	Type:  perfTypeAverage,
 }
 
-var PerfCpuReadySum = PerfMetric{
-	Group: perfGroupCpu,
+var PerfCPUReadySum = PerfMetric{
+	Group: perfGroupCPU,
 	Name:  "ready",
 	Type:  perfTypeSum,
 }

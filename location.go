@@ -12,6 +12,16 @@ type Location struct {
 	UpdatedDate int    `json:"updated_date"`
 }
 
+func (l Location) GetPublicVAppTemplates() ([]VAppTemplate, error) {
+	vAppTemplates := []VAppTemplate{}
+	data, err := l.client.Get(fmt.Sprintf("/location/%s/public-vapp-templates", l.ID))
+	if err != nil {
+		return vAppTemplates, err
+	}
+	err = json.Unmarshal(data, &vAppTemplates)
+	return vAppTemplates, err
+}
+
 func (l Location) GetEntityActiveTasks(entityUUID string) ([]Task, error) {
 	tasks := []Task{}
 	data, err := l.client.Get(fmt.Sprintf("/task/%s/entity/%s", l.ID, entityUUID))

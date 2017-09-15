@@ -44,7 +44,7 @@ type PerfResults struct {
 }
 
 type PerfSample struct {
-	Time  int `json:"int"`
+	Time  int `json:"time"`
 	Value int `json:"value"`
 }
 

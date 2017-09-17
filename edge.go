@@ -22,16 +22,16 @@ type Edge struct {
 }
 
 type EdgeInterface struct {
-	Name                string              `json:"name"`
-	DisplayName         string              `json:"display_name"`
-	Type                string              `json:"type"`
-	SubnetParticipation SubnetParticipation `json:"subnet_participation"`
-	DefaultRoute        bool                `json:"default_route"`
-	LimitEnabled        bool                `json:"apply_rate_limit"`
-	InboundLimit        int                 `json:"in_rate_limit"`
-	OutboundLimit       int                 `json:"out_rate_limit"`
-	NetworkName         string              `json:"network"`
-	NetworkUUID         string              `json:"network_uuid"`
+	Name                string                `json:"name"`
+	DisplayName         string                `json:"display_name"`
+	Type                string                `json:"type"`
+	SubnetParticipation []SubnetParticipation `json:"subnet_participation"`
+	DefaultRoute        bool                  `json:"default_route"`
+	LimitEnabled        bool                  `json:"apply_rate_limit"`
+	InboundLimit        float64               `json:"in_rate_limit"`
+	OutboundLimit       float64               `json:"out_rate_limit"`
+	NetworkName         string                `json:"network"`
+	NetworkUUID         string                `json:"network_uuid"`
 }
 
 type EdgeNATConfig struct {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"mime/multipart"
+	"net/http"
 	"os"
 	"strconv"
 
@@ -131,4 +132,25 @@ func (c Catalog) UploadVAppTemplate(ovaFilePath, vAppTemplateName, storageProfil
 		bytesSent += len(chunk)
 	}
 	return nil
+}
+
+func (c Catalog) ChunkUploaded(uploadID string, chunkNumber, totalChunks int) (bool, error) {
+	err := c.client.refreshTokenIfNecessary()
+	if err != nil {
+		return false, err
+	}
+	client := &http.Client{}
+	path := fmt.Sprintf("%s/catalog/%s/vapp-template/upload?resumableIdentifier=%s&resumableChunkNumber=%d&resumableTotalChunks=%d", apiBaseURL, c.UUID, uploadID, chunkNumber, totalChunks)
+	req, _ := http.NewRequest("GET", path, nil)
+	req.Header.Add("Authorization", "Bearer "+c.client.Token.AccessToken)
+	req.Header.Add("Accept", "application/vnd.ilandcloud.api.v0.8+json")
+	req.Header.Add("Content-Type", "application/vnd.ilandcloud.api.v0.8+json")
+	resp, err := client.Do(req)
+	if err != nil {
+		return false, err
+	}
+	if resp.StatusCode == http.StatusOK {
+		return true, nil
+	}
+	return false, nil
 }

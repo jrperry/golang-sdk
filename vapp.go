@@ -189,14 +189,36 @@ func (v VApp) RemoveNetwork(vAppNetworkUUID string) (Task, error) {
 }
 
 type AddVirtualMachineFromVAppTemplateParams struct {
+	NewVirtualMachineName    string
+	SourceVAppTemplateUUID   string
+	SourceVirtualMachineUUID string
+}
+
+type addVirtualMachinesFromVAppTemplateParams struct {
 	NewVirtualMachineName    string `json:"name"`
 	SourceVAppTemplateUUID   string `json:"vapp_template_uuid"`
 	SourceVirtualMachineUUID string `json:"vm_template_uuid"`
+	IPAddressMode            string `json:"ip_address_mode"`
+	NetworkUUID              string `json:"network_uuid"`
+	IPAddress                string `json:"ip_address"`
 }
 
 func (v VApp) AddVirtualMachinesFromVAppTemplates(params []AddVirtualMachineFromVAppTemplateParams) (Task, error) {
+	virtualMachineParams := []addVirtualMachinesFromVAppTemplateParams{}
+	networks := v.GetVAppNetworks()
+	for _, param := range params {
+		virtualMachineParam := addVirtualMachinesFromVAppTemplateParams{
+			NewVirtualMachineName:    param.NewVirtualMachineName,
+			SourceVAppTemplateUUID:   param.SourceVAppTemplateUUID,
+			SourceVirtualMachineUUID: param.SourceVirtualMachineUUID,
+			IPAddressMode:            "DHCP",
+			NetworkUUID:              networks[0].UUID,
+			IPAddress:                "",
+		}
+		virtualMachineParams = append(virtualMachineParams, virtualMachineParam)
+	}
 	task := Task{}
-	output, _ := json.Marshal(&params)
+	output, _ := json.Marshal(&virtualMachineParams)
 	data, err := v.client.Post(fmt.Sprintf("/vapp/%s/vms", v.UUID), output)
 	if err != nil {
 		return task, err

@@ -59,6 +59,7 @@ func (e Edge) GetNATConfig() (EdgeNATConfig, error) {
 }
 
 func (e Edge) AddNATRule(rule NATRule) (Task, error) {
+	e.client.waitUntilObjectIsReady(e.LocationID, e.UUID)
 	task := Task{}
 	natConfig, err := e.GetNATConfig()
 	if err != nil {
@@ -76,6 +77,7 @@ func (e Edge) AddNATRule(rule NATRule) (Task, error) {
 }
 
 func (e Edge) DeleteNATRule(ruleID int) (Task, error) {
+	e.client.waitUntilObjectIsReady(e.LocationID, e.UUID)
 	task := Task{}
 	natConfig, err := e.GetNATConfig()
 	if err != nil {

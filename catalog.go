@@ -40,6 +40,7 @@ func (c Catalog) GetVAppTemplates() []VAppTemplate {
 }
 
 func (c Catalog) AddVAppTemplate(sourceVAppUUID, newVAppTemplateName string) (Task, error) {
+	c.client.waitUntilObjectIsReady(c.LocationID, c.UUID)
 	task := Task{}
 	vApp, err := c.client.GetVApp(sourceVAppUUID)
 	if err != nil {
@@ -73,6 +74,7 @@ func (c Catalog) AddVAppTemplate(sourceVAppUUID, newVAppTemplateName string) (Ta
 }
 
 func (c Catalog) UploadVAppTemplate(ovaFilePath, vAppTemplateName, storageProfileUUID string) error {
+	c.client.waitUntilObjectIsReady(c.LocationID, c.UUID)
 	var storageProfile StorageProfile
 	if storageProfileUUID == "" {
 		org, _ := c.client.GetOrg(c.OrgUUID)

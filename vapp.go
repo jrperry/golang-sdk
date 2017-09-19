@@ -46,6 +46,7 @@ func (v VApp) GetVAppNetworks() []VAppNetwork {
 }
 
 func (v VApp) Delete() (Task, error) {
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	data, err := v.client.Delete(fmt.Sprintf("/vapp/%s", v.UUID))
 	if err != nil {
@@ -57,6 +58,7 @@ func (v VApp) Delete() (Task, error) {
 }
 
 func (v VApp) PowerOn() (Task, error) {
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	data, err := v.client.Post(fmt.Sprintf("/vapp/%s/poweron", v.UUID), []byte{})
 	if err != nil {
@@ -68,6 +70,7 @@ func (v VApp) PowerOn() (Task, error) {
 }
 
 func (v VApp) PowerOff() (Task, error) {
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	data, err := v.client.Post(fmt.Sprintf("/vapp/%s/poweroff", v.UUID), []byte{})
 	if err != nil {
@@ -79,6 +82,7 @@ func (v VApp) PowerOff() (Task, error) {
 }
 
 func (v VApp) Suspend() (Task, error) {
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	data, err := v.client.Post(fmt.Sprintf("/vapp/%s/suspend", v.UUID), []byte{})
 	if err != nil {
@@ -90,6 +94,7 @@ func (v VApp) Suspend() (Task, error) {
 }
 
 func (v VApp) Rename(newVAppName string) (Task, error) {
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	params := struct {
 		Name string `json:"name"`
@@ -107,6 +112,7 @@ func (v VApp) Rename(newVAppName string) (Task, error) {
 }
 
 func (v VApp) TakeSnapshot() (Task, error) {
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	params := struct {
 		Name        string `json:"name"`
@@ -129,6 +135,7 @@ func (v VApp) TakeSnapshot() (Task, error) {
 }
 
 func (v VApp) RevertSnapshot() (Task, error) {
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	data, err := v.client.Post(fmt.Sprintf("/vapp/%s/snapshot/restore", v.UUID), []byte{})
 	if err != nil {
@@ -140,6 +147,7 @@ func (v VApp) RevertSnapshot() (Task, error) {
 }
 
 func (v VApp) Clone(targetVdcUUID, newVAppName string) (Task, error) {
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	params := struct {
 		Name string `json:"name"`
@@ -166,6 +174,7 @@ type AddVAppNetworkParams struct {
 }
 
 func (v VApp) AddVAppNetwork(params AddVAppNetworkParams) (Task, error) {
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	output, _ := json.Marshal(&params)
 	data, err := v.client.Post(fmt.Sprintf("/vapp/%s/vapp-network", v.UUID), output)
@@ -178,6 +187,7 @@ func (v VApp) AddVAppNetwork(params AddVAppNetworkParams) (Task, error) {
 }
 
 func (v VApp) RemoveNetwork(vAppNetworkUUID string) (Task, error) {
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	data, err := v.client.Delete(fmt.Sprintf("/vapp/%s/network/%s", v.UUID, vAppNetworkUUID))
 	if err != nil {
@@ -204,6 +214,7 @@ type addVirtualMachinesFromVAppTemplateParams struct {
 }
 
 func (v VApp) AddVirtualMachinesFromVAppTemplates(params []AddVirtualMachineFromVAppTemplateParams) (Task, error) {
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	virtualMachineParams := []addVirtualMachinesFromVAppTemplateParams{}
 	networks := v.GetVAppNetworks()
 	for _, param := range params {

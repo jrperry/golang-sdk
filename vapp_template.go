@@ -35,6 +35,7 @@ type VAppTemplateVirtualMachine struct {
 }
 
 func (v VAppTemplate) Delete() (Task, error) {
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	data, err := v.client.Delete(fmt.Sprintf("/vapp-template/%s", v.UUID))
 	if err != nil {
@@ -59,6 +60,7 @@ func (v VAppTemplate) GetVirtualMachines() []VAppTemplateVirtualMachine {
 }
 
 func (v VAppTemplate) Deploy(vdcUUID, NewVAppName string) (Task, error) {
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	params := struct {
 		VAppTemplateUUID string `json:"vapp_template_uuid"`
@@ -82,6 +84,7 @@ func (v VAppTemplate) Deploy(vdcUUID, NewVAppName string) (Task, error) {
 }
 
 func (v VAppTemplate) Rename(newVAppTemplateName string) (Task, error) {
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	params := struct {
 		Name string `json:"name"`

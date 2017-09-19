@@ -174,6 +174,7 @@ func (c *Client) GetEdges() []Edge {
 	for _, org := range c.GetOrgs() {
 		orgEdges := []Edge{}
 		data, _ := c.Get(fmt.Sprintf("/org/%s/edges", org.UUID))
+		fmt.Println(string(data))
 		json.Unmarshal(data, &orgEdges)
 		edges = append(edges, orgEdges...)
 	}
@@ -356,4 +357,16 @@ func (c *Client) GetTask(locationID, taskUUID string) (Task, error) {
 	}
 	task.client = c
 	return task, nil
+}
+
+func (c Client) waitUntilObjectIsReady(locationID, objectUUID string) {
+	tasks := []Task{}
+	for {
+		data, _ := c.Delete(fmt.Sprintf("/task/%s/entity/%s/active", locationID, objectUUID))
+		json.Unmarshal(data, &tasks)
+		if len(tasks) == 0 {
+			return
+		}
+		time.Sleep(time.Second * 5)
+	}
 }

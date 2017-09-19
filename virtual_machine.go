@@ -3,7 +3,6 @@ package iland
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 )
 
 type VirtualMachine struct {
@@ -87,7 +86,7 @@ func (v VirtualMachine) GetHotAddConfig() HotAddConfig {
 }
 
 func (v VirtualMachine) SetHotAdd(cpuHotAdd, memoryHotAdd bool) (Task, error) {
-	v.WaitForTasks()
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	hotAdd := HotAddConfig{
 		CPUHotAdd:    cpuHotAdd,
@@ -104,7 +103,7 @@ func (v VirtualMachine) SetHotAdd(cpuHotAdd, memoryHotAdd bool) (Task, error) {
 }
 
 func (v VirtualMachine) Delete() (Task, error) {
-	v.WaitForTasks()
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	data, err := v.client.Delete(fmt.Sprintf("/vm/%s", v.UUID))
 	if err != nil {
@@ -125,20 +124,8 @@ func (v VirtualMachine) IsBusy() bool {
 	return true
 }
 
-func (v VirtualMachine) WaitForTasks() {
-	tasks := []Task{}
-	for {
-		data, _ := v.client.Delete(fmt.Sprintf("/task/%s/entity/%s/active", v.LocationID, v.UUID))
-		json.Unmarshal(data, &tasks)
-		if len(tasks) == 0 {
-			return
-		}
-		time.Sleep(time.Second * 5)
-	}
-}
-
 func (v VirtualMachine) Rename(newName string) (Task, error) {
-	v.WaitForTasks()
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	params := struct {
 		Name string `json:"name"`
@@ -156,7 +143,7 @@ func (v VirtualMachine) Rename(newName string) (Task, error) {
 }
 
 func (v VirtualMachine) PowerOn() (Task, error) {
-	v.WaitForTasks()
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	data, err := v.client.Post(fmt.Sprintf("/vm/%s/poweron", v.UUID), []byte{})
 	if err != nil {
@@ -168,7 +155,7 @@ func (v VirtualMachine) PowerOn() (Task, error) {
 }
 
 func (v VirtualMachine) Reboot() (Task, error) {
-	v.WaitForTasks()
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	data, err := v.client.Post(fmt.Sprintf("/vm/%s/reboot", v.UUID), []byte{})
 	if err != nil {
@@ -180,7 +167,7 @@ func (v VirtualMachine) Reboot() (Task, error) {
 }
 
 func (v VirtualMachine) PowerOff() (Task, error) {
-	v.WaitForTasks()
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	data, err := v.client.Post(fmt.Sprintf("/vm/%s/poweroff", v.UUID), []byte{})
 	if err != nil {
@@ -192,7 +179,7 @@ func (v VirtualMachine) PowerOff() (Task, error) {
 }
 
 func (v VirtualMachine) Shutdown() (Task, error) {
-	v.WaitForTasks()
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	tools := v.GetTools()
 	if tools.Version == "0" {
 		return v.PowerOff()
@@ -208,7 +195,7 @@ func (v VirtualMachine) Shutdown() (Task, error) {
 }
 
 func (v VirtualMachine) ModifyCPU(cpuCount int) (Task, error) {
-	v.WaitForTasks()
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	params := struct {
 		CPUCount       int `json:"cpus_number"`
@@ -228,7 +215,7 @@ func (v VirtualMachine) ModifyCPU(cpuCount int) (Task, error) {
 }
 
 func (v VirtualMachine) ModifyMemory(memoryMB int) (Task, error) {
-	v.WaitForTasks()
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	params := struct {
 		MemoryMB int `json:"memory_size"`
@@ -246,7 +233,7 @@ func (v VirtualMachine) ModifyMemory(memoryMB int) (Task, error) {
 }
 
 func (v VirtualMachine) ModifyNics(nics []Nic) (Task, error) {
-	v.WaitForTasks()
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	output, _ := json.Marshal(&nics)
 	data, err := v.client.Put(fmt.Sprintf("/vm/%s/vnics", v.UUID), output)
@@ -258,72 +245,10 @@ func (v VirtualMachine) ModifyNics(nics []Nic) (Task, error) {
 	return task, err
 }
 
-func (v VirtualMachine) DeleteNic(nicIndex int) (Task, error) {
-	v.WaitForTasks()
-	task := Task{}
-	data, err := v.client.Delete(fmt.Sprintf("/vm/%s/vnics/%d", v.UUID, nicIndex))
-	if err != nil {
-		return task, err
-	}
-	err = json.Unmarshal(data, &task)
-	task.client = v.client
-	return task, err
-}
-
-func (v VirtualMachine) AddDisk(diskSizeMB int) (Task, error) {
-	v.WaitForTasks()
-	task := Task{}
-	disk := Disk{
-		Size: diskSizeMB,
-		Type: "LSI_LOGIC",
-	}
-	output, _ := json.Marshal(&disk)
-	data, err := v.client.Post(fmt.Sprintf("/vm/%s/virtual-disk", v.UUID), output)
-	if err != nil {
-		return task, err
-	}
-	err = json.Unmarshal(data, &task)
-	task.client = v.client
-	return task, err
-}
-
-func (v VirtualMachine) ModifyDisk(disk Disk) (Task, error) {
-	v.WaitForTasks()
-	task := Task{}
-	output, _ := json.Marshal(&disk)
-	data, err := v.client.Put(fmt.Sprintf("/vm/%s/virtual-disk", v.UUID), output)
-	if err != nil {
-		return task, err
-	}
-	err = json.Unmarshal(data, &task)
-	task.client = v.client
-	return task, err
-}
-
 func (v VirtualMachine) ModifyDisks(disks []Disk) (Task, error) {
-	v.WaitForTasks()
+	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
 	output, _ := json.Marshal(&disks)
-	data, err := v.client.Put(fmt.Sprintf("/vm/%s/virtual-disks", v.UUID), output)
-	if err != nil {
-		return task, err
-	}
-	err = json.Unmarshal(data, &task)
-	task.client = v.client
-	return task, err
-}
-
-func (v VirtualMachine) DeleteDisk(diskName string) (Task, error) {
-	v.WaitForTasks()
-	task := Task{}
-	disks := v.GetDisks()
-	updatedDisks := []Disk{}
-	for _, disk := range disks {
-		if disk.Name != diskName {
-			updatedDisks = append(updatedDisks, disk)
-		}
-	}
-	output, _ := json.Marshal(&updatedDisks)
 	data, err := v.client.Put(fmt.Sprintf("/vm/%s/virtual-disks", v.UUID), output)
 	if err != nil {
 		return task, err

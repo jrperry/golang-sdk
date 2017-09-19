@@ -2,7 +2,9 @@ package iland
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net"
 	"time"
 )
 
@@ -176,6 +178,24 @@ type AddVAppNetworkParams struct {
 func (v VApp) AddVAppNetwork(params AddVAppNetworkParams) (Task, error) {
 	v.client.waitUntilObjectIsReady(v.LocationID, v.UUID)
 	task := Task{}
+	gateway := net.ParseIP(params.Gateway)
+	if gateway == nil {
+		return task, errors.New("invalid gateway address")
+	}
+	netmask := net.ParseIP(params.Netmask)
+	if netmask == nil {
+		return task, errors.New("invalid netmask")
+	}
+	for _, ipRange := range params.IPRanges {
+		startAddress := net.ParseIP(ipRange.Start)
+		if startAddress == nil {
+			return task, errors.New("invalid ip range start address")
+		}
+		endAddress := net.ParseIP(ipRange.End)
+		if endAddress == nil {
+			return task, errors.New("invalid ip range end address")
+		}
+	}
 	output, _ := json.Marshal(&params)
 	data, err := v.client.Post(fmt.Sprintf("/vapp/%s/vapp-network", v.UUID), output)
 	if err != nil {

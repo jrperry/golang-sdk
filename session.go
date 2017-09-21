@@ -107,7 +107,7 @@ func removeJSONHijackingPrefix(b []byte) []byte {
 }
 
 func (c *Client) request(relPath, verb string, payload []byte) ([]byte, error) {
-	err := c.refreshTokenIfNecessary()
+	err := c.RefreshTokenIfNecessary()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -150,7 +150,7 @@ func (c *Client) request(relPath, verb string, payload []byte) ([]byte, error) {
 }
 
 func (c *Client) getBinary(relPath string) ([]byte, error) {
-	err := c.refreshTokenIfNecessary()
+	err := c.RefreshTokenIfNecessary()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -190,7 +190,7 @@ func (c *Client) getBinary(relPath string) ([]byte, error) {
 }
 
 func (c *Client) postForm(relPath, contentType string, payload []byte) ([]byte, error) {
-	err := c.refreshTokenIfNecessary()
+	err := c.RefreshTokenIfNecessary()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -229,7 +229,7 @@ func (c *Client) postForm(relPath, contentType string, payload []byte) ([]byte, 
 	return responseBody, nil
 }
 
-func (c *Client) refreshTokenIfNecessary() error {
+func (c *Client) RefreshTokenIfNecessary() error {
 	emptyToken := Token{}
 	if c == nil || c.Token == emptyToken {
 		err := c.getToken()

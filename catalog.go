@@ -137,7 +137,7 @@ func (c Catalog) UploadVAppTemplate(ovaFilePath, vAppTemplateName, storageProfil
 }
 
 func (c Catalog) ChunkUploaded(uploadID string, chunkNumber, totalChunks int) (bool, error) {
-	err := c.client.refreshTokenIfNecessary()
+	err := c.client.RefreshTokenIfNecessary()
 	if err != nil {
 		return false, err
 	}

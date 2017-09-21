@@ -39,6 +39,46 @@ type EdgeNATConfig struct {
 	Rules   []NATRule `json:"rules"`
 }
 
+type NATRule struct {
+	ID             int    `json:"id,omitempty"`
+	Type           string `json:"type"`
+	Enabled        bool   `json:"enabled"`
+	Description    string `json:"description"`
+	OriginalIP     string `json:"original_ip"`
+	OriginalPort   string `json:"original_port,omitempty"`
+	TranslatedIP   string `json:"translated_ip"`
+	TranslatedPort string `json:"translated_port,omitempty"`
+	Protocol       string `json:"protocol"`
+	InterfaceName  string `json:"interface"`
+}
+
+type EdgeFirewallConfig struct {
+	EdgeUUID      string         `json:"edge_uuid"`
+	Version       int            `json:"version,omitempty"`
+	DefaultAction string         `json:"default_action"`
+	Enabled       bool           `json:"enabled"`
+	Log           bool           `json:"log"`
+	Rules         []FirewallRule `json:"rules"`
+}
+
+type FirewallRule struct {
+	ID                   string   `json:"id,omitempty"`
+	IDX                  int      `json:"idx,omitempty"`
+	Enabled              bool     `json:"enabled"`
+	Description          string   `json:"description"`
+	DestinationIP        string   `json:"destination_ip"`
+	DestinationPortRange string   `json:"destination_port_range"`
+	Direction            string   `json:"direction,omitempty"`
+	ICMPSubType          string   `json:"icmp_sub_type,omitempty"`
+	Logging              bool     `json:"logging"`
+	MatchOnTranslate     bool     `json:"match_on_translate"`
+	Policy               string   `json:"policy"`
+	Protocol             []string `json:"protocol"`
+	SourceIP             string   `json:"source_ip"`
+	SourcePort           int      `json:"source_port"`
+	SourcePortRange      string   `json:"source_port_range"`
+}
+
 func (e Edge) GetUplinkInterface() EdgeInterface {
 	for _, edgeInterface := range e.Interfaces {
 		if edgeInterface.Type == "uplink" {
@@ -48,49 +88,76 @@ func (e Edge) GetUplinkInterface() EdgeInterface {
 	return EdgeInterface{}
 }
 
-func (e Edge) GetNATConfig() (EdgeNATConfig, error) {
-	natConfig := EdgeNATConfig{}
-	data, err := e.client.Get(fmt.Sprintf("/edge/%s/nat", e.UUID))
+func (e Edge) GetFirewallConfig() (EdgeFirewallConfig, error) {
+	config := EdgeFirewallConfig{}
+	data, err := e.client.Get(fmt.Sprintf("/edge/%s/firewall", e.UUID))
 	if err != nil {
-		return natConfig, err
+		return config, err
 	}
-	err = json.Unmarshal(data, &natConfig)
-	return natConfig, err
+	err = json.Unmarshal(data, &config)
+	return config, err
 }
 
-func (e Edge) AddNATRule(rule NATRule) (Task, error) {
+func (e Edge) GetExternalInterface() EdgeInterface {
+	edgeInterface := EdgeInterface{}
+	data, _ := e.client.Get(fmt.Sprintf("/edge/%s/edge-interface", e.UUID))
+	fmt.Println(string(data))
+	err := json.Unmarshal(data, &edgeInterface)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return edgeInterface
+}
+
+func (e Edge) UpdateExternalInterface(edgeInterface EdgeInterface) (Task, error) {
+	task := Task{}
+	output, err := json.Marshal(&edgeInterface)
+	if err != nil {
+		return task, err
+	}
+	data, err := e.client.Put(fmt.Sprintf("/edge/%s/edge-interface", e.UUID), output)
+	if err != nil {
+		return task, err
+	}
+	err = json.Unmarshal(data, &task)
+	return task, err
+}
+
+func (e Edge) UpdateFirewallConfig(config EdgeFirewallConfig) (Task, error) {
 	e.client.waitUntilObjectIsReady(e.LocationID, e.UUID)
 	task := Task{}
-	natConfig, err := e.GetNATConfig()
+	output, err := json.Marshal(&config)
 	if err != nil {
 		return task, err
 	}
-	natConfig.Rules = append(natConfig.Rules, rule)
-	output, _ := json.Marshal(&natConfig)
-	data, err := e.client.Put(fmt.Sprintf("/edge/%s/nat", e.UUID), output)
+	fmt.Println(string(output))
+	data, err := e.client.Put(fmt.Sprintf("/edge/%s/firewall", e.UUID), output)
 	if err != nil {
 		return task, err
 	}
+	fmt.Println(string(data))
 	err = json.Unmarshal(data, &task)
 	task.client = e.client
 	return task, err
 }
 
-func (e Edge) DeleteNATRule(ruleID int) (Task, error) {
+func (e Edge) GetNATConfig() (EdgeNATConfig, error) {
+	config := EdgeNATConfig{}
+	data, err := e.client.Get(fmt.Sprintf("/edge/%s/nat", e.UUID))
+	if err != nil {
+		return config, err
+	}
+	err = json.Unmarshal(data, &config)
+	return config, err
+}
+
+func (e Edge) UpdateNATConfig(config EdgeNATConfig) (Task, error) {
 	e.client.waitUntilObjectIsReady(e.LocationID, e.UUID)
 	task := Task{}
-	natConfig, err := e.GetNATConfig()
+	output, err := json.Marshal(&config)
 	if err != nil {
 		return task, err
 	}
-	natRules := []NATRule{}
-	for _, rule := range natConfig.Rules {
-		if rule.ID != ruleID {
-			natRules = append(natRules, rule)
-		}
-	}
-	natConfig.Rules = natRules
-	output, _ := json.Marshal(&natConfig)
 	data, err := e.client.Put(fmt.Sprintf("/edge/%s/nat", e.UUID), output)
 	if err != nil {
 		return task, err

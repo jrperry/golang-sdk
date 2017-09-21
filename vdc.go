@@ -81,8 +81,7 @@ func (v Vdc) GetVirtualMachines() []VirtualMachine {
 func (v Vdc) GetPerformance(start, end time.Time, perfInterval string, metric PerfMetric) (PerfResults, error) {
 	results := PerfResults{}
 	limit := getPerfLimit(perfInterval)
-	queryParams := fmt.Sprintf("?group=%s&name=%s&type=%s&start=%d&end=%d&interval=%s&limit=%s", metric.Group, metric.Name, metric.Type, getUnixMilliseconds(start), getUnixMilliseconds(end), perfInterval, limit)
-	data, err := v.client.Get(fmt.Sprintf("/vdc/%s/p%s", v.UUID, queryParams))
+	data, err := v.client.Get(fmt.Sprintf("/vdc/%s/p?group=%s&name=%s&type=%s&start=%d&end=%d&interval=%s&limit=%s", v.UUID, metric.Group, metric.Name, metric.Type, getUnixMilliseconds(start), getUnixMilliseconds(end), perfInterval, limit))
 	if err != nil {
 		return results, err
 	}
@@ -102,8 +101,7 @@ func (v Vdc) GetCurrentBill() (BillingSummary, error) {
 
 func (v Vdc) GetPrevBill(month, year int) (BillingSummary, error) {
 	billing := BillingSummary{}
-	queryParams := fmt.Sprintf("?month=%d&year=%d", month, year)
-	data, err := v.client.Get(fmt.Sprintf("/vdc/%s/bill%s", v.UUID, queryParams))
+	data, err := v.client.Get(fmt.Sprintf("/vdc/%s/bill?month=%d&year=%d", v.UUID, month, year))
 	if err != nil {
 		return billing, err
 	}

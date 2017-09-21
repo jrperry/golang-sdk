@@ -174,7 +174,6 @@ func (c *Client) GetEdges() []Edge {
 	for _, org := range c.GetOrgs() {
 		orgEdges := []Edge{}
 		data, _ := c.Get(fmt.Sprintf("/org/%s/edges", org.UUID))
-		fmt.Println(string(data))
 		json.Unmarshal(data, &orgEdges)
 		edges = append(edges, orgEdges...)
 	}

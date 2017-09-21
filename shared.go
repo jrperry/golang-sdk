@@ -14,19 +14,6 @@ type IPRange struct {
 	End   string `json:"end"`
 }
 
-type NATRule struct {
-	ID             int    `json:"id"`
-	Type           string `json:"type"`
-	Enabled        bool   `json:"enabled"`
-	Description    string `json:"description"`
-	OriginalIP     string `json:"original_ip"`
-	OriginalPort   string `json:"original_port"`
-	TranslatedIP   string `json:"translated_ip"`
-	TranslatedPort string `json:"translated_port"`
-	Protocol       string `json:"protocol"`
-	InterfaceName  string `json:"interface"`
-}
-
 type PerfMetric struct {
 	Group string
 	Name  string

@@ -88,16 +88,6 @@ func (e Edge) GetUplinkInterface() EdgeInterface {
 	return EdgeInterface{}
 }
 
-func (e Edge) GetFirewallConfig() (EdgeFirewallConfig, error) {
-	config := EdgeFirewallConfig{}
-	data, err := e.client.Get(fmt.Sprintf("/edge/%s/firewall", e.UUID))
-	if err != nil {
-		return config, err
-	}
-	err = json.Unmarshal(data, &config)
-	return config, err
-}
-
 func (e Edge) GetExternalInterface() EdgeInterface {
 	edgeInterface := EdgeInterface{}
 	data, _ := e.client.Get(fmt.Sprintf("/edge/%s/edge-interface", e.UUID))
@@ -123,6 +113,16 @@ func (e Edge) UpdateExternalInterface(edgeInterface EdgeInterface) (Task, error)
 	return task, err
 }
 
+func (e Edge) GetFirewallConfig() (EdgeFirewallConfig, error) {
+	config := EdgeFirewallConfig{}
+	data, err := e.client.Get(fmt.Sprintf("/edge/%s/firewall", e.UUID))
+	if err != nil {
+		return config, err
+	}
+	err = json.Unmarshal(data, &config)
+	return config, err
+}
+
 func (e Edge) UpdateFirewallConfig(config EdgeFirewallConfig) (Task, error) {
 	e.client.waitUntilObjectIsReady(e.LocationID, e.UUID)
 	task := Task{}
@@ -130,12 +130,10 @@ func (e Edge) UpdateFirewallConfig(config EdgeFirewallConfig) (Task, error) {
 	if err != nil {
 		return task, err
 	}
-	fmt.Println(string(output))
 	data, err := e.client.Put(fmt.Sprintf("/edge/%s/firewall", e.UUID), output)
 	if err != nil {
 		return task, err
 	}
-	fmt.Println(string(data))
 	err = json.Unmarshal(data, &task)
 	task.client = e.client
 	return task, err
@@ -165,4 +163,9 @@ func (e Edge) UpdateNATConfig(config EdgeNATConfig) (Task, error) {
 	err = json.Unmarshal(data, &task)
 	task.client = e.client
 	return task, err
+}
+
+func (e Edge) GetUsage() {
+	data, _ := e.client.Get(fmt.Sprintf("/edge/%s/usage", e.UUID))
+	fmt.Println(string(data))
 }

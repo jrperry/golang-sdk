@@ -3,6 +3,7 @@ package iland
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type Task struct {
@@ -31,4 +32,17 @@ func (t Task) Refresh() Task {
 	json.Unmarshal(data, &task)
 	task.client = t.client
 	return task
+}
+
+func (t Task) Track() Task {
+	for {
+		task := Task{}
+		data, _ := t.client.Get(fmt.Sprintf("/task/%s/%s", t.LocationID, t.UUID))
+		json.Unmarshal(data, &task)
+		if !task.Active {
+			task.client = t.client
+			return task
+		}
+		time.Sleep(time.Second * 10)
+	}
 }

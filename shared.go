@@ -97,6 +97,12 @@ type BillingLineItem struct {
 	ProductID string  `json:"product_id"`
 }
 
+type Snapshot struct {
+	Size         int       `json:"size"`
+	IsPoweredOn  bool      `json:"is_powered_on"`
+	CreationDate time.Time `json:"creation_date"`
+}
+
 func getPerfLimit(perfInterval string) string {
 	switch perfInterval {
 	case PerfIntervalSecond:

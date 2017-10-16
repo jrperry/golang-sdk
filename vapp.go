@@ -54,7 +54,7 @@ func (v VApp) Delete() (Task, error) {
 	if err != nil {
 		return task, err
 	}
-	err = json.Unmarshal([]byte(data), &task)
+	err = json.Unmarshal(data, &task)
 	task.client = v.client
 	return task, err
 }
@@ -66,7 +66,7 @@ func (v VApp) PowerOn() (Task, error) {
 	if err != nil {
 		return task, err
 	}
-	err = json.Unmarshal([]byte(data), &task)
+	err = json.Unmarshal(data, &task)
 	task.client = v.client
 	return task, err
 }
@@ -78,7 +78,7 @@ func (v VApp) PowerOff() (Task, error) {
 	if err != nil {
 		return task, err
 	}
-	err = json.Unmarshal([]byte(data), &task)
+	err = json.Unmarshal(data, &task)
 	task.client = v.client
 	return task, err
 }
@@ -90,7 +90,7 @@ func (v VApp) Suspend() (Task, error) {
 	if err != nil {
 		return task, err
 	}
-	err = json.Unmarshal([]byte(data), &task)
+	err = json.Unmarshal(data, &task)
 	task.client = v.client
 	return task, err
 }
@@ -108,9 +108,31 @@ func (v VApp) Rename(newVAppName string) (Task, error) {
 	if err != nil {
 		return task, err
 	}
-	err = json.Unmarshal([]byte(data), &task)
+	err = json.Unmarshal(data, &task)
 	task.client = v.client
 	return task, err
+}
+
+func (v VApp) HasSnapshot() bool {
+	check := struct {
+		HasSnapshot bool `json:"has_snapshot"`
+	}{}
+	data, err := v.client.Get(fmt.Sprintf("/vapp/%s/snapshot/check", v.UUID))
+	if err != nil {
+		return false
+	}
+	json.Unmarshal(data, &check)
+	return check.HasSnapshot
+}
+
+func (v VApp) GetSnapshot() (Snapshot, error) {
+	snapshot := Snapshot{}
+	data, err := v.client.Get(fmt.Sprintf("/vapp/%s/snapshot", v.UUID))
+	if err != nil {
+		return snapshot, err
+	}
+	err = json.Unmarshal(data, &snapshot)
+	return snapshot, err
 }
 
 func (v VApp) TakeSnapshot() (Task, error) {
@@ -131,7 +153,7 @@ func (v VApp) TakeSnapshot() (Task, error) {
 	if err != nil {
 		return task, err
 	}
-	err = json.Unmarshal([]byte(data), &task)
+	err = json.Unmarshal(data, &task)
 	task.client = v.client
 	return task, err
 }
@@ -143,7 +165,7 @@ func (v VApp) RevertSnapshot() (Task, error) {
 	if err != nil {
 		return task, err
 	}
-	err = json.Unmarshal([]byte(data), &task)
+	err = json.Unmarshal(data, &task)
 	task.client = v.client
 	return task, err
 }
@@ -161,7 +183,7 @@ func (v VApp) Clone(targetVdcUUID, newVAppName string) (Task, error) {
 	if err != nil {
 		return task, err
 	}
-	err = json.Unmarshal([]byte(data), &task)
+	err = json.Unmarshal(data, &task)
 	task.client = v.client
 	return task, err
 }
@@ -201,7 +223,7 @@ func (v VApp) AddVAppNetwork(params AddVAppNetworkParams) (Task, error) {
 	if err != nil {
 		return task, err
 	}
-	err = json.Unmarshal([]byte(data), &task)
+	err = json.Unmarshal(data, &task)
 	task.client = v.client
 	return task, err
 }
@@ -213,7 +235,7 @@ func (v VApp) RemoveNetwork(vAppNetworkUUID string) (Task, error) {
 	if err != nil {
 		return task, err
 	}
-	err = json.Unmarshal([]byte(data), &task)
+	err = json.Unmarshal(data, &task)
 	task.client = v.client
 	return task, err
 }
@@ -254,7 +276,7 @@ func (v VApp) AddVirtualMachinesFromVAppTemplates(params []AddVirtualMachineFrom
 	if err != nil {
 		return task, err
 	}
-	err = json.Unmarshal([]byte(data), &task)
+	err = json.Unmarshal(data, &task)
 	task.client = v.client
 	return task, err
 }

@@ -41,6 +41,38 @@ func (c *Client) Delete(endpoint string) ([]byte, error) {
 	return c.request(endpoint, "DELETE", []byte{})
 }
 
+func (c *Client) GetUser(username string) (User, error) {
+	user := User{}
+	data, err := c.Get(fmt.Sprintf("/user/%s", username))
+	if err != nil {
+		return user, err
+	}
+	err = json.Unmarshal(data, &user)
+	user.client = c
+	return user, err
+}
+
+func (c *Client) GetCompany(crm string) (Company, error) {
+	company := Company{}
+	data, err := c.Get(fmt.Sprintf("/companies/%s", crm))
+	if err != nil {
+		return company, err
+	}
+	err = json.Unmarshal(data, &company)
+	company.client = c
+	return company, err
+}
+
+func (c *Client) GetCloudTenant(tenantUUID string) (CloudTenant, error) {
+	cloudTenant := CloudTenant{}
+	data, err := c.Get(fmt.Sprintf("/cloud-tenant/%s", tenantUUID))
+	if err != nil {
+		return cloudTenant, err
+	}
+	err = json.Unmarshal(data, &cloudTenant)
+	return cloudTenant, err
+}
+
 func (c *Client) GetLocations() []Location {
 	locations := []Location{}
 	data, _ := c.Get(fmt.Sprintf("/user/%s/inventory", c.username))

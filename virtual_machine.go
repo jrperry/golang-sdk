@@ -3,6 +3,7 @@ package iland
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 )
 
 type VirtualMachine struct {
@@ -276,7 +277,12 @@ func (v VirtualMachine) GetConsoleSession() (ConsoleSession, error) {
 }
 
 func (v VirtualMachine) GetScreenThumbnail() ([]byte, error) {
-	data, err := v.client.getBinary(fmt.Sprintf("/vm/%s/screen", v.UUID))
+	reader, err := v.client.getBinaryStream(fmt.Sprintf("/vm/%s/screen", v.UUID))
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+	data, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return []byte{}, err
 	}

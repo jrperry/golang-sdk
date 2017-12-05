@@ -15,14 +15,15 @@ type Client struct {
 	tokenExpiration time.Time
 }
 
-func NewClient(Username, Password, ClientID, ClientSecret string) *Client {
+func NewClient(Username, Password, ClientID, ClientSecret string) (*Client, error) {
 	client := Client{
 		username:     Username,
 		password:     Password,
 		clientID:     ClientID,
 		clientSecret: ClientSecret,
 	}
-	return &client
+	err := client.getToken()
+	return &client, err
 }
 
 func (c *Client) Get(endpoint string) ([]byte, error) {

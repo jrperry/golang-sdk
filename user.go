@@ -1,5 +1,10 @@
 package iland
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 type User struct {
 	client      *Client
 	Name        string `json:"name"`
@@ -18,4 +23,25 @@ type User struct {
 	Deleted     bool   `json:"deleted"`
 	CreatedDate int    `json:"created_date"`
 	DeletedDate int    `json:"deleted_date"`
+}
+
+type UserRole struct {
+	Role     string `json:"role"`
+	Type     string `json:"type"`
+	Username string `json:"username"`
+	OrgUUID  string `json:"org_uuid"`
+}
+
+func (u *User) GetRoles() []UserRole {
+	roles := []UserRole{}
+	data, _ := u.client.Get(fmt.Sprintf("/user/%s/roles", u.Name))
+	json.Unmarshal(data, &roles)
+	return roles
+}
+
+func (u *User) GetAlerts() []Alert {
+	alerts := []Alert{}
+	data, _ := u.client.Get(fmt.Sprintf("/user/%s/alerts", u.Name))
+	json.Unmarshal(data, &alerts)
+	return alerts
 }

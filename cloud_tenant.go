@@ -23,7 +23,7 @@ type CloudTenant struct {
 }
 
 type CloudTenantResources struct {
-	Resource []CloudTenantResource `json:"resources"`
+	Resources []CloudTenantResource `json:"resources"`
 }
 
 type CloudTenantResource struct {

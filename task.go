@@ -13,6 +13,7 @@ type Task struct {
 	Status         string `json:"status"`
 	Progress       int    `json:"progress"`
 	Active         bool   `json:"active"`
+	Synchronized   bool   `json:"synchronized"`
 	Message        string `json:"message"`
 	TaskType       string `json:"task_type"`
 	Operation      string `json:"operation"`
@@ -39,7 +40,7 @@ func (t Task) Track() Task {
 		task := Task{}
 		data, _ := t.client.Get(fmt.Sprintf("/task/%s/%s", t.LocationID, t.UUID))
 		json.Unmarshal(data, &task)
-		if !task.Active {
+		if !task.Active && task.Synchronized {
 			task.client = t.client
 			return task
 		}

@@ -100,7 +100,7 @@ func (c *Client) refreshToken() error {
 }
 
 func (c *Client) setTokenExpiration() {
-	c.tokenExpiration = time.Now().Add(time.Duration(c.Token.ExpiresIn-10) * time.Second)
+	c.tokenExpiration = time.Now().Add(time.Duration(c.Token.ExpiresIn-60) * time.Second)
 }
 
 func removeJSONHijackingPrefix(b []byte) []byte {

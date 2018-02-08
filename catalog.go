@@ -10,7 +10,7 @@ import (
 	"os"
 	"strconv"
 
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 )
 
 type Catalog struct {
@@ -96,7 +96,7 @@ func (c Catalog) UploadVAppTemplate(ovaFilePath, vAppTemplateName, storageProfil
 	totalSize := strconv.Itoa(fileSize)
 	totalChunks := strconv.Itoa(chunks)
 	bytesSent := 0
-	uploadID := uuid.NewV4().String()
+	uploadID, _ := uuid.NewRandom()
 	for i := 1; i <= chunks; i++ {
 		if bytesSent+chunkSizeBytes > fileSize {
 			chunkSizeBytes = fileSize - bytesSent
@@ -115,7 +115,7 @@ func (c Catalog) UploadVAppTemplate(ovaFilePath, vAppTemplateName, storageProfil
 		w.WriteField("description", "test")
 		w.WriteField("vdc", storageProfile.VdcUUID)
 		w.WriteField("storage_profile", storageProfile.UUID)
-		w.WriteField("resumableIdentifier", uploadID)
+		w.WriteField("resumableIdentifier", uploadID.String())
 		w.WriteField("resumableChunkNumber", chunkNumber)
 		w.WriteField("resumableChunkSize", chunkSize)
 		w.WriteField("resumableCurrentChunkSize", chunkSize)
